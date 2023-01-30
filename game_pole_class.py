@@ -73,12 +73,13 @@ class GamePole:
                     continue
 
     def move_ships(self):
-        for ship in self._ships:
-            ship_before = ship
-            go = ch([-1, 1])
-            ship.move(go)
-            if ship.is_out_pole(self._size):
-                ship = ship_before
+        # for ship in self._ships:
+        #     ship_before = ship
+        #     go = ch([-1, 1])
+        #     ship.move(go)
+        #     if ship.is_out_pole(self._size):
+        #         ship = ship_before
+        pass
 
     def show(self):
         for i in self.current_game_field:

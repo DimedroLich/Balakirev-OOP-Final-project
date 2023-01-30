@@ -59,20 +59,35 @@ class Ship:
 
     def move(self, go):
         if self._is_move:
-            if self._tp == 1:
-                self.set_start_coords(self._x + go, self._y)
+            if not self.is_on_game_pole:
+                if self._tp == 1:
+                    self.set_start_coords(self._x + go, self._y)
+                else:
+                    self.set_start_coords(self._x, self._y + go)
             else:
-                self.set_start_coords(self._x, self._y + go)
+                if self._tp == 1:
+                    self.set_start_coords(self._x[0] + go, self._y[0])
+                else:
+                    self.set_start_coords(self._x[0], self._y + go[0])
 
     def is_collide(self, ship) -> bool:
         """Проверка на столкновение с другим кораблем ship"""
-        x, y = self._x, self._y
-        for x1, y1 in (
-        (x, y), (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
-        (x + 1, y + 1)):
-            if (x1, y1) == (ship._x, ship._y):
-                return True
-        return False
+        if not self.is_on_game_pole:
+            x, y = self._x, self._y
+            for x1, y1 in (
+            (x, y), (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
+            (x + 1, y + 1)):
+                if (x1, y1) == (ship._x, ship._y):
+                    return True
+            return False
+        else:
+            x, y = self._x[0], self._y[0]
+            for x1, y1 in (
+                (x, y), (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
+                (x + 1, y + 1)):
+                if (x1, y1) == (ship._x, ship._y):
+                    return True
+            return False
 
     def is_out_pole(self, size) -> bool:
         """Проверка на выход корабля за пределы игрового поля"""
@@ -99,7 +114,7 @@ class Ship:
 
 
 class GamePole:
-
+    # TODO 1. Реализовать метод move_ships
     # TODO 2. Переделать метод show
 
     def __init__(self, size=10):
@@ -113,7 +128,7 @@ class GamePole:
     def get_pole(self):
         return tuple(tuple(i) for i in self.current_game_field)
 
-    def adjacent_cell_is_free_check(self, cell_index: tuple[int | int]) -> bool:
+    def adjacent_cell_is_free_check(self, cell_index):
         """Проверяет являются ли соседние клетки свободными"""
         x, y = cell_index[0], cell_index[1]
         for index1, index2 in (
@@ -127,8 +142,10 @@ class GamePole:
         return True
 
     def init(self):
-        for num, point in enumerate(reversed(range(1, 5)), 1):
-            self._ships.extend(Ship(num, tp=rd(1, 2)) for i in range(point))
+        n = 1
+        for outer_num in range(4, 0, -1):
+            self._ships.extend(Ship(outer_num, tp=rd(1, 2)) for i in range(n))
+            n += 1
         for ship in self._ships:
             ship.size_of_gamepole = self._size
             while ship.is_on_game_pole != True:
@@ -181,18 +198,6 @@ class GamePole:
             print()
 
 
-# a = GamePole()
-# a.init()
-# a.show()
-# # print(a)
-# print(a.get_pole())
-# # for i in a._ships:
-# #     print(i.__dict__)
-#
-# # b = Ship(4,tp=2)
-# # b.size_of_gamepole = 10
-# # b.set_start_coords(6,6)
-# # print(b.__dict__)
 ship = Ship(2)
 ship = Ship(2, 1)
 ship = Ship(3, 2, 0, 0)
@@ -224,17 +229,22 @@ s2 = Ship(3, 2, 1, 5)
 assert s2.is_out_pole(10) == False, "неверно работает метод is_out_pole(10) для корабля Ship(3, 2, 1, 5)"
 
 s2[0] = 2
-
 assert s2[0] == 2, "неверно работает обращение ship[indx]"
 
 p = GamePole(10)
 p.init()
-p.show()
 for nn in range(5):
     for s in p._ships:
         assert s.is_out_pole(10) == False, "корабли выходят за пределы игрового поля"
 
-    #     for ship in p.get_ships():
-    #         if s != ship:
-    #             assert s.is_collide(ship) == False, "корабли на игровом поле соприкасаются"
-    # p.move_ships()
+        for ship in p.get_ships():
+            if s != ship:
+                assert s.is_collide(ship) == False, "корабли на игровом поле соприкасаются"
+    p.move_ships()
+
+gp = p.get_pole()
+assert type(gp) == tuple and type(gp[0]) == tuple, "метод get_pole должен возвращать двумерный кортеж"
+assert len(gp) == 10 and len(gp[0]) == 10, "неверные размеры игрового поля, которое вернул метод get_pole"
+
+pole_size_8 = GamePole(8)
+pole_size_8.init()

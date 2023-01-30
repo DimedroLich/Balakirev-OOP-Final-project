@@ -60,12 +60,21 @@ class Ship:
                 self.set_start_coords(self._x,self._y+go)
     def is_collide(self, ship) -> bool:
         """Проверка на столкновение с другим кораблем ship"""
-        x, y = self._x, self._y
-        for x1,y1  in ((x, y),(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
-        (x + 1, y + 1)):
-               if (x1,y1) == (ship._x, ship._y):
-                   return True
-        return False
+        if not self.is_on_game_pole:
+            x, y = self._x, self._y
+            for x1,y1  in ((x, y),(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
+            (x + 1, y + 1)):
+                   if (x1,y1) == (ship._x, ship._y):
+                       return True
+            return False
+        else:
+            x, y = self._x[0], self._y[0]
+            for x1, y1 in (
+            (x, y), (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x - 1, y), (x + 1, y), (x - 1, y + 1), (x, y + 1),
+            (x + 1, y + 1)):
+                if (x1, y1) == (ship._x, ship._y):
+                    return True
+            return False
 
     def is_out_pole(self,size) -> bool:
         """Проверка на выход корабля за пределы игрового поля"""
