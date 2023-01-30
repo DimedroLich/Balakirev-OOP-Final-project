@@ -1,6 +1,7 @@
 from random import randint as rd
 
-# TODO ПЕРВЫМ ДЕЛОМ: РЕАЛИЗОВАТЬ РАССТАНОВКУ КОРАБЛЕЙ НА ПОЛЕ В КЛАССЕ GAMEPOLE
+
+# TODO ПЕРВЫМ ДЕЛОМ: РЕАЛИЗОВАТЬ РАССТАНОВКУ КОРАБЛЕЙ НА ПОЛЕ В КЛАССЕ GAMEPOLE.
 
 class Ship:
     """
@@ -21,17 +22,36 @@ class Ship:
         self._is_move = True  # Возможно ли перемешение корабля
         self._cells = [1 for i in range(length)]  # 1 - попадания не было; 2 - попадание было
         self.is_on_game_pole = False
+        self.size_of_gamepole = None
 
     def set_start_coords(self, x, y):
         """
         Установка начальных координат (запись значений в локальные атрибуты _x, _y)
         """
-        self._x, self._y = x, y
+        if self.size_of_gamepole is None:
+            if self._tp == 1:
+                self._x = tuple(range(x, self._length + x))
+                self._y = y
+            else:
+                self._x = x
+                self._y = tuple(range(y, self._length + y))
+        else:
+            if (self._tp == 1 and x + self._length > self.size_of_gamepole) or (
+                self._tp == 2 and y + self._length > self.size_of_gamepole):
+                raise ValueError('Объект выходит за границы игрового поля')
+            else:
+                if self._tp == 1:
+                    self._x = tuple(range(x, self._length + x))
+                    self._y = (y,)
+                else:
+                    self._x = (x,)
+                    self._y = tuple(range(y, self._length + y))
 
     def get_start_coords(self):
         return self._x, self._y
 
-    def move(self, go): ...
+    def move(self, go):
+        ...
 
     def is_collide(self, ship) -> bool:
         """Проверка на столкновение с другим кораблем ship"""
@@ -49,13 +69,48 @@ class GamePole:
         self._ships = []  # Список кораблей на игровом поле
         self.current_game_field = [[0 for i in range(size)] for i in range(size)]
 
+
+    def adjacent_cell_is_free_check(self, cell_index: tuple[int | int]) -> bool:
+        """Проверяет являются ли соседние клетки свободными"""
+        x,y = cell_index[0],cell_index[1]
+        for index1, index2 in ((x-1,y-1), (x,y-1),(x+1,y-1),(x-1,y),(x+1,y),(x-1,y+1),(x,y+1),(x+1,y+1)):
+            try:
+                if self.current_game_field[index1][index2] != 0:
+                    return False
+            except IndexError:
+                continue
+        return True
+
+
+
     def init(self):
-        for num,point in enumerate(reversed(range(1,5)),1):
+        for num, point in enumerate(reversed(range(1, 5)), 1):
             self._ships.extend(Ship(num, tp=rd(1, 2)) for i in range(point))
         for ship in self._ships:
+            ship.size_of_gamepole = self._size
             while ship.is_on_game_pole != True:
                 try:
-                    ship.set_start_coords()
+                    x = rd(0, self._size - 1)
+                    y = rd(0, self._size - 1)
+                    ship.set_start_coords(x, y)
+                    results = []
+                    for x_check in ship._x:
+                        for y_check in ship._y:
+                            rez = self.adjacent_cell_is_free_check((x_check,y_check))
+                            results.append(rez)
+                    if all(i==True for i in results):
+                        for i in ship._x:
+                            for j in ship._y:
+                                self.current_game_field[i][j] = ship._length
+                        ship.is_on_game_pole = True
+                        self.show()
+                        print('****************')
+                        print()
+                        print('******************')
+                    else:
+                        raise ValueError
+                except ValueError:
+                    continue
 
     def show(self):
         for i in a.current_game_field:
@@ -63,10 +118,14 @@ class GamePole:
                 print(j, end=" ")
             print()
 
+
 a = GamePole()
 a.init()
-
+a.show()
 # for i in a._ships:
 #     print(i.__dict__)
 
-
+# b = Ship(4,tp=2)
+# b.size_of_gamepole = 10
+# b.set_start_coords(6,6)
+# print(b.__dict__)
