@@ -1,7 +1,9 @@
-from random import randint as rd,choice as ch
+from random import randint as rd, choice as ch
 from ship_class import Ship
-class GamePole:
 
+
+class GamePole:
+    # TODO 1. Реализовать метод move_ships
     # TODO 2. Переделать метод show
 
     def __init__(self, size=10):
@@ -29,8 +31,10 @@ class GamePole:
         return True
 
     def init(self):
-        for num, point in enumerate(reversed(range(1, 5)), 1):
-            self._ships.extend(Ship(num, tp=rd(1, 2)) for i in range(point))
+        n = 1
+        for outer_num in range(4, 0, -1):
+            self._ships.extend(Ship(outer_num, tp=rd(1, 2)) for i in range(n))
+            n += 1
         for ship in self._ships:
             ship.size_of_gamepole = self._size
             while ship.is_on_game_pole != True:
@@ -71,11 +75,10 @@ class GamePole:
     def move_ships(self):
         for ship in self._ships:
             ship_before = ship
-            go = ch([-1,1])
+            go = ch([-1, 1])
             ship.move(go)
             if ship.is_out_pole(self._size):
                 ship = ship_before
-
 
     def show(self):
         for i in self.current_game_field:
